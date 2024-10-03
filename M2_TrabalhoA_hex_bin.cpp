@@ -162,7 +162,7 @@ void resolver_conflito_dados(const vector<Instruction>& instructions, vector<Ins
             if(next_inst.rd == subsequent_inst.rs1 || next_inst.rd == subsequent_inst.rs2)
                 next_tem_conflito = true;
 
-            if(next_inst.opcode == "I"){
+            if(next_inst.opcode == "1110011" || next_inst.opcode == "0010011"){
                 if (current_inst.rd == next_inst.rs1) { // Verificando se a próxima instrução tem conflito
                     tem_conflito = true;
                     cout << "\nConflito detectado na instrucao: " << current_inst.full_instruction;
@@ -187,14 +187,14 @@ void resolver_conflito_dados(const vector<Instruction>& instructions, vector<Ins
             }
         }
         // forwarding
-        if(current_inst.opcode == "L"){ // Load instructions
-            if(next_inst.opcode == "I" || next_inst.opcode == "L"){
+        if(current_inst.opcode == "0000011"){ // Load instructions
+            if(next_inst.opcode == "1110011" || next_inst.opcode == "0010011" || next_inst.opcode == "0000011"){
                 if(current_inst.rd == next_inst.rs1){
                     tem_conflito = true;
                     cout << "\nConflito detectado na instrucao Load: " << current_inst.full_instruction;
                     resolvido_instructions.push_back(nop);
                 }
-            } else if (next_inst.opcode == "B" || next_inst.opcode == "S" || next_inst.opcode == "R"){
+            } else if (next_inst.opcode == "1100011" || next_inst.opcode == "0100011" || next_inst.opcode == "0110011"){
                 if(current_inst.rd == next_inst.rs1 || current_inst.rd == next_inst.rs2){
                     tem_conflito = true;
                     cout << "\nConflito detectado na instrucao Load: " << current_inst.full_instruction;
