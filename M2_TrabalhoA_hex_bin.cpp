@@ -162,7 +162,7 @@ void resolver_conflito_dados(const vector<Instruction>& instructions, vector<Ins
             if(next_inst.rd == subsequent_inst.rs1 || next_inst.rd == subsequent_inst.rs2)
                 next_tem_conflito = true;
 
-            if(next_inst.opcode == "1110011" || next_inst.opcode == "0010011"){
+            if(next_inst.opcode == "0110011"){
                 if (current_inst.rd == next_inst.rs1) { // Verificando se a próxima instrução tem conflito
                     tem_conflito = true;
                     cout << "\nConflito detectado na instrucao: " << current_inst.full_instruction;
@@ -173,7 +173,7 @@ void resolver_conflito_dados(const vector<Instruction>& instructions, vector<Ins
                     cout << "\nConflito detectado na instrucao: " << current_inst.full_instruction;
                     resolvido_instructions.push_back(nop); // 1 nop para instrução subsequente (1 nop + 1 instrução = 2 ciclos)
                 }
-            } else { // R etc
+            } if(next_inst.opcode != "0110011") { // R etc
                 if (current_inst.rd == next_inst.rs1 || current_inst.rd == next_inst.rs2) { // Verificando se a próxima instrução tem conflito
                     tem_conflito = true;
                     cout << "\nConflito detectado na instrucao: " << current_inst.full_instruction;
@@ -186,7 +186,32 @@ void resolver_conflito_dados(const vector<Instruction>& instructions, vector<Ins
                 }
             }
         }
-        // forwarding
+
+        if(!tem_conflito){
+            cout << "\nSem conflito na instrucao: " << current_inst.full_instruction;
+        }
+    }
+    resolvido_instructions.push_back(instructions[instructions.size() - 1]);
+}
+// forwarding
+void forwarding_com_nops(const vector<Instruction>& instructions, vector<Instruction>& resolvido_instructions){
+    bool tem_conflito = false;
+    bool next_tem_conflito = false;
+
+    Instruction nop;
+    nop.full_instruction = "00000000000000000000000000010011";
+
+    for (int i = 0; i < instructions.size() - 1; i++) {
+        
+        const Instruction& current_inst = instructions[i];
+        const Instruction& next_inst = instructions[i + 1];
+        const Instruction& subsequent_inst = instructions[i + 2];
+
+        resolvido_instructions.push_back(current_inst);
+        
+        tem_conflito = false;
+        next_tem_conflito = false;
+
         if(current_inst.opcode == "0000011"){ // Load instructions
             if(next_inst.opcode == "1110011" || next_inst.opcode == "0010011" || next_inst.opcode == "0000011"){
                 if(current_inst.rd == next_inst.rs1){
@@ -202,11 +227,7 @@ void resolver_conflito_dados(const vector<Instruction>& instructions, vector<Ins
                 }
             }
         }
-        if(!tem_conflito){
-            cout << "\nSem conflito na instrucao: " << current_inst.full_instruction;
-        }
     }
-    resolvido_instructions.push_back(instructions[instructions.size() - 1]);
 }
 
 // Função para ler um arquivo de instruções
@@ -240,7 +261,7 @@ void escrever_file(const vector<Instruction>& resolvido_instructions) {
 }
 
 int main() {
-    string input_file = "dumpfile2.txt";
+    string input_file = "dumpfile.txt";
     map<string, int> tipos_instrucoes = {{"ALU", 0}, {"ALU Immediate", 0}, {"Memory", 0}, {"Branch", 0}, {"Other", 0}, {"Jump", 0}};
     vector<Instruction> instructions;
     vector<Instruction> resolvido_instructions;
@@ -276,6 +297,28 @@ int main() {
     escrever_file(resolvido_instructions);
 
     cout << "<-------------------------------------------------->" << endl;
+
+    // cout << "<-------------------------------------------------->" << endl;
+
+    // cout << "Iniciando Forwarding... ";
+
+    // cout << "\nClassificacao de Instrucoes: " << endl << endl;
+    // cout << "\tTotal de Instrucoes: " << mostrar_instrucoes(instructions.size()) << endl;
+    //     for (const auto &li : tipos_instrucoes){
+    //         cout << "\tTipo " << li.first << ": " << li.second << endl;
+    //     }
+
+    // // Resolver conflitos de dados
+    // cout << "\nResolvendo conflitos de dados com NOPs..." << endl;
+    // forwarding_com_nops(instructions, resolvido_instructions);
+    // cout << "\n\n\tTotal de Instrucoes com NOPs: " << mostrar_instrucoes(resolvido_instructions.size()) << endl;
+    // cout << "\tA quantidade de NOPs alocado na instrucao: " << mostrar_instrucoes(resolvido_instructions.size()-instructions.size()) << endl;
+
+    // // Escrever as instruções resolvidas no arquivo de saída
+    // cout << "\nAbrir arquivo 'output.txt' para visualizar os conflitos de dados resolvido com NOPs...\n";
+    // escrever_file(resolvido_instructions);
+
+    // cout << "<-------------------------------------------------->" << endl;
 
     return 0;
 }
